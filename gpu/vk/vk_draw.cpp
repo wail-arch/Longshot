@@ -7015,9 +7015,37 @@ void draw(VkCommandBuffer cmd, NvnState& s, const DrawArgs& d) {
         if (use.on) use.pipeline(pe->ready.load(std::memory_order_acquire), use_counters.pipes_new != pipes_new);
     }
     if (!pe->ready.load(std::memory_order_acquire)) {
+        // (a short wait first, the fork's) A draw that may be left out waits a little for its pipeline before it is:
+        // RX_VK_PIPE_WAIT_MS milliseconds (25), and twenty times that a frame in all. A pipeline the driver has in its own cache
+        // (built in an earlier run, or by the prediction; all of them with RX_VK_PRECOMPILE=0) is ready within a few
+        // milliseconds, yet its draw was left out of that frame and the next: the first frames of an area came without part of
+        // their draws (surfaces lit wrongly for a moment, then right). One that really compiles (0.3-2 s) times out and is left
+        // out as before, and after a time-out nothing waits for the next 20 frames. 0: never waits, as upstream
+        auto wait_a_little = [&](const std::atomic<bool>& ready) {
+            static const double each_ms = getenv("RX_VK_PIPE_WAIT_MS") ? atof(getenv("RX_VK_PIPE_WAIT_MS")) : 25.0;
+            static std::atomic<uint64_t> frame{0}, cold_until{0};
+            static std::atomic<int64_t> left_us{0};
+            if (each_ms <= 0) return false;
+            const uint64_t now = texture_frame_no();
+            if (now < cold_until.load(std::memory_order_relaxed)) return false;
+            if (frame.exchange(now, std::memory_order_relaxed) != now) left_us.store((int64_t)(each_ms * 20000), std::memory_order_relaxed);
+            const double have = std::min(each_ms, left_us.load(std::memory_order_relaxed) / 1000.0);
+            if (have <= 0) return false;
+            const auto t0 = std::chrono::steady_clock::now();
+            const bool ok = jobs_wait_for(ready, have);
+            const int64_t us = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - t0).count();
+            left_us.fetch_sub(us, std::memory_order_relaxed);
+            st_waits++;
+            st_wait_ms += us / 1000.0;
+            if (!ok) cold_until.store(now + 20, std::memory_order_relaxed);
+            return ok;
+        };
         const bool may_skip = !always_wait && targets_persistent(at) && !writes_memory(p);
-        if (may_skip) return use.skipped(), void(st_pending_skips++);
-        wait_for(pe->ready);
+        if (may_skip) {
+            if (!wait_a_little(pe->ready)) return use.skipped(), void(st_pending_skips++);
+        } else {
+            wait_for(pe->ready);
+        }
     }
     if (use.on) use.pipeline_made(pe->how.load(std::memory_order_relaxed));
     const VkPipeline pl = pe->pipeline;
