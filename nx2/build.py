@@ -58,6 +58,11 @@ ZSTD_HOST = ("prompts.c", "hos_zstd.c")   # (the host files that use it: a mod's
 OBJ_CACHE = os.path.join(kit.WORK, "objcache")
 # (hookshot) work/hot_order.txt: the functions that run, hottest first (sampled), packed together by the linker; RX_NO_ORDER=1: off
 PGO = os.environ.get("RX_PGO", "")
+# (hookshot, a local build's option) RX_VK_PGO=gen: the Vulkan back end counts its branches (hookshot_vk.dll writes them every
+# 600 presents to RX_VK_PGO_OUT, or default.profraw in the game folder; llvm-profdata merge makes the profile of them).
+# RX_VK_PGO=<merged .profdata>: the back end built with that profile. The replay is the frame's limit: what it runs most is laid
+# out and inlined for it. Same code and results either way.
+VK_PGO = os.environ.get("RX_VK_PGO", "")
 
 
 # (linux) Linux builds: an ELF executable and hookshot_vk.so, the Win32 calls of host/ and gpu/vk on POSIX
@@ -1303,6 +1308,13 @@ def main():
             "-I" + os.path.join(vk_headers, "include"), "-I" + os.path.join(vma_headers, "include"),
             "-I" + vk, "-I" + gen_dir,
             "-I" + os.path.join(kit.ROOT, "third_party", "zbic")]
+        if VK_PGO == "gen":
+            vflags += ["-fprofile-instr-generate", "-DHOOKSHOT_VK_PGO_GEN"]
+            print("the Vulkan back end: counting its branches (RX_VK_PGO=gen)", flush=True)
+        elif VK_PGO:
+            with open(VK_PGO, "rb") as f:   # (the profile's hash in the flags: another profile at the same path rebuilds)
+                vflags += ["-fprofile-instr-use=" + VK_PGO, "-DHOOKSHOT_VK_PROFILE_SHA1=" + hashlib.sha1(f.read()).hexdigest()[:16]]
+            print("the Vulkan back end: built with the profile %s" % VK_PGO, flush=True)
         # (NVIDIA DLSS, a local build's option: scripts/ngx_sdk.py. Only vk_dlss.cpp sees NVIDIA's headers; without them
         # it is the stubs that say DLSS is not there)
         ngx_flags = ["-DHOOKSHOT_NGX", "-I" + os.path.join(NGX_SDK, "include")] if NGX_SDK else []
@@ -1520,6 +1532,8 @@ def main():
         else:
             link = [cc] + toolchain.native_target() + toolchain.native_link() + \
                 ["-shared", "-o", vdll] + linker("/map:" + vdll[:-4] + ".map") + ["@" + vrsp, "-luser32"] +                 (["-lc++", "-lunwind"] if toolchain.mingw() else []) + ngx_link(NGX_SDK, toolchain.mingw())
+        if VK_PGO == "gen":
+            link += ["-fprofile-instr-generate"]
         r = run_link(link, vdll)
         if r.returncode:
             undefined = sorted({l.strip() for l in (r.stdout + r.stderr).splitlines() if "undefined symbol" in l})

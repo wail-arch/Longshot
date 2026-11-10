@@ -57,6 +57,10 @@
 #include "vk_programs.h"
 #include "vk_work.h"   // (after the others: counts the commands that do GPU work, for full_barrier)
 
+#ifdef HOOKSHOT_VK_PGO_GEN   // (clang's profile runtime, linked in by RX_VK_PGO=gen)
+extern "C" int __llvm_profile_write_file(void);
+extern "C" void __llvm_profile_set_filename(const char*);
+#endif
 namespace mkwvk {
 extern std::atomic<bool> movie_networks_slow;   // (vk_draw.cpp: the movie networks left out, issue 109)
 int64_t presents_now;   // (the presents so far, for SlowWatch)
@@ -3560,6 +3564,13 @@ void do_present(const nvn_tex* t, const int crop[4], float cover) {
         presents++;
         presents_now = presents;
         wide_sides_tick(cover);
+#ifdef HOOKSHOT_VK_PGO_GEN   // (nx2/build.py RX_VK_PGO=gen: the branch counts so far, so a run that is stopped leaves them too)
+        if (presents % 600 == 0) {
+            static const char* const out = getenv("RX_VK_PGO_OUT");
+            if (out) __llvm_profile_set_filename(out);
+            __llvm_profile_write_file();
+        }
+#endif
         if (presents == 1) hang_watch_start(), gpu_hang_watch_start();
         {   // (EvilBoyce, diagnostics) RX_VK_WATCH_CPU=<present>:<gpu address>[,...] (hex addresses): from that present on, the
             // CPU's writes to those 4 KB pages logged with the writer's stack (host page watch: 12 reports)
