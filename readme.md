@@ -1,3 +1,33 @@
+> **Longshot** is a personal fork of **[Hookshot](https://github.com/NotRexed/Hookshot)**, by NotRexed and Hookshot's
+> contributors. The project, its design and nearly all of its code are theirs: this fork only carries a few changes on
+> top of Hookshot v2.1.0, under the same licence (GPL v3, see [LICENSE](LICENSE)). It is not affiliated with or endorsed
+> by Hookshot's authors. If you want the real thing, the releases and the support, go to
+> [NotRexed/Hookshot](https://github.com/NotRexed/Hookshot).
+>
+> **What differs from Hookshot v2.1.0**
+>
+> - A draw waits a little for its program or pipeline before it is left out of a frame.
+> - The pipeline prediction runs until it has been run to its end (it goes on at the next start, and runs again on
+>   another graphics card).
+> - An optional profile-guided build of the Vulkan back end (`RX_VK_PGO`, a local build's option).
+> - The look: the start-up screen says LONGSHOT, "based on Hookshot"; the menu's banner says SETTINGS; the window's
+>   title can be set (`HOS_WINDOW_TITLE` in `hookshot_env.txt`); the Discord status is off unless you turn it on.
+>
+> **A note for 8 GB graphics cards.** Measured on an RTX 3070 Ti laptop: v2.1.0 makes and keeps about 10,800 graphics
+> pipelines at every start, which costs about 500 MB of video memory and brings the card to its limit in Kokiri Forest
+> (see Hookshot's issue 2156). After one start that prepared the shaders, `RX_VK_PRECOMPILE=0` in `hookshot_env.txt`
+> gives that memory back at the same speed: the pipelines are then taken from the cache when first drawn.
+>
+> **Thanks.** To NotRexed and everyone who contributes to Hookshot, first. And to
+> [Fritchii](https://github.com/Frizti/Fritchii) and the projects it builds on: it served as the reference for how the
+> picture should look, and some practices here are inspired by it, such as preparing the shaders ahead of play so that
+> a place seen for the first time plays like one already visited. No code from Fritchii is in this repository.
+>
+> As with Hookshot, you need your own copy of the game: nothing of the game is in this repository, and nothing made
+> from it may be added to it. Problems with this fork's changes belong here, not in Hookshot's tracker.
+>
+> Everything below is Hookshot's own README, unchanged.
+
 <h1 align="center">
   <br>
   <a>
