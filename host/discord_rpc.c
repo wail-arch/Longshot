@@ -1,6 +1,6 @@
 /* (hookshot) Discord Rich Presence: "Playing Hookshot" with the time played in the player's Discord status, through the local
    IPC of a Discord client running on this PC. Nothing leaves the machine but the activity itself, and nothing is sent while the
-   Insert menu's "Discord status" row is off (on by default; it does nothing without a Discord client running).
+   Insert menu's "Discord status" row is off (the fork: off by default, where upstream's is on; it does nothing without a Discord client running).
 
    Discord shows the *application's* name above the status ("Playing <name>") and its art: the status needs a Discord application
    of its own (discord.com/developers/applications, named Hookshot, its art uploaded under Rich Presence > Art Assets with the key
@@ -260,7 +260,7 @@ static void presence_main(void) {
             }
             reread_at = now_ms() + 15000;
         }
-        if (!rx_option(HOS_OPT_DISCORD, 1)) {   /* the Insert menu's row, off */
+        if (!rx_option(HOS_OPT_DISCORD, 0)) {   /* the menu's row, off (the fork's default; off too while the renderer has no answer yet) */
             if (ipc != IPC_NONE) ipc_close(ipc), ipc = IPC_NONE;
             continue;
         }
