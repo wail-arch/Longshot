@@ -3110,17 +3110,30 @@ void draw_options(ui::Ctx& c) {
         hits.add(x, 0, x + tw[i], hh, menu_hit::kTab, i);
         x += tw[i];
     }
-    {   // (which build, at the banner's left, so a report can say it without opening the log; the release alone when the whole
-        // line would run into the tabs)
-        std::string ver = std::string("Hookshot ") + HOOKSHOT_VERSION;
-        const float room = (c.w - total) * 0.5f - 60 * s - c.safe, px = 15 * s;
-        const auto width = [&](float p) { return ui::size_of(c.f.body, p, ver.c_str()).x; };
+    {   // (the fork: the word SETTINGS where upstream writes which build, at the banner's left: in the tabs' own font, its
+        // letters spaced. No name and no version on screen: the log's first lines say which build this is)
+        std::string ver = "SETTINGS";
+        const float room = (c.w - total) * 0.5f - 60 * s - c.safe, px = 19 * s;
+        const auto width = [&](float p) {   // (each letter and the space after it, 0.16 em)
+            float all = 0;
+            char one[2] = {0, 0};
+            for (const char ch : ver) one[0] = ch, all += ui::size_of(c.f.heading, p, one).x + 0.16f * p;
+            return all;
+        };
         if (width(px) > room && ver.find(" (") != std::string::npos) ver.resize(ver.find(" ("));
         // (still too long, as a source build's "v2.0.11-821-g7b81752-dirty" since the Audio tab: at Small and Medium smaller
         // until it fits, on half-point steps, 10 points at the least; at Large, the size for a TV across the room, at its size
         // or not at all, as before)
         const float fit = ui::fit_px(px, opts.menu_size == 3 ? px : kVersionMinPt * s, 0.5f * s, room, width);
-        if (fit > 0) ui::text_mid(c, c.f.body, fit, c.safe, ty, ui::kBannerInk, ver.c_str());
+        if (fit > 0) {
+            float lx = c.safe;
+            char one[2] = {0, 0};
+            for (const char ch : ver) {
+                one[0] = ch;
+                ui::text_mid(c, c.f.heading, fit, lx, ty, ui::kBannerInk, one);
+                lx += ui::size_of(c.f.heading, fit, one).x + 0.16f * fit;
+            }
+        }
     }
     // the rows, in the column; the help beside it
     float cx0, cx1, hx0, hx1;
@@ -4004,15 +4017,13 @@ void draw_startup(ui::Ctx& c) {
     }
     const float s = c.s, w = c.w, h = c.h, cx = w * 0.5f, k = s * 0.86f;   // (k: the scale of what is under the logo)
     c.d->AddRectFilled(ImVec2(0, 0), ImVec2(w, h), ui::rgba(14, 10, 6));
-    const float lh = 112 * s, top = h * 0.5f - 176 * s;
+    // (the fork: its own name, no picture above it and no version under it; "based on Hookshot" where the version was)
+    const float lh = 0, top = h * 0.5f - 120 * s;
     for (int i = 40; i >= 1; i--) c.d->AddCircleFilled(ImVec2(cx, top + lh * 0.5f + 70 * s), h * 0.021f * i, ui::rgba(46, 33, 18, 4), 128);
-    float aspect = 1;
-    ImTextureData* logo = ui::logo(&aspect);
-    if (logo) c.d->AddImage(logo->GetTexRef(), ImVec2(cx - lh * aspect * 0.5f, top), ImVec2(cx + lh * aspect * 0.5f, top + lh));
     float y = top + lh + 16 * s;
-    ui::spaced(c, c.f.heading, 42 * k, ImVec2(cx, y), ui::rgba(246, 232, 204), "HOOKSHOT", 6 * k);
+    ui::spaced(c, c.f.heading, 42 * k, ImVec2(cx, y), ui::rgba(246, 232, 204), "LONGSHOT", 6 * k);
     ui::flourish(c, cx - 190 * k, cx + 190 * k, y + 66 * k, ui::kAccent);
-    ui::text_centre(c, c.f.body, 14.5f * k, ImVec2(cx, y + 78 * k), ui::kDim, v.version.c_str());
+    ui::text_centre(c, c.f.body, 14.5f * k, ImVec2(cx, y + 78 * k), ui::kDim, "based on Hookshot");
     if (!v.title.empty()) {
         y += 120 * k;
         if (!v.step.empty()) {   // ("STEP 2 OF 2" as "Step 2 of 2")
