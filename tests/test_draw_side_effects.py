@@ -187,6 +187,8 @@ def main():
             env = os.environ.copy()
             env.pop("RX_VK_PIPE_SKIP", None)
             env.pop("RX_VK_TRANSLATE_WAIT_MS", None)
+            # (the fork's short wait for a pipeline, off: the cases below are the decisions, and their waits upstream's alone)
+            env["RX_VK_PIPE_WAIT_MS"] = "0"
             if mode is not None:
                 env["RX_VK_PIPE_SKIP"] = mode
             if wait is not None:
