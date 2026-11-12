@@ -1,22 +1,31 @@
 > **Longshot** is a personal fork of **[Hookshot](https://github.com/NotRexed/Hookshot)**, by NotRexed and Hookshot's
 > contributors. The project, its design and nearly all of its code are theirs: this fork only carries a few changes on
-> top of Hookshot v2.1.0, under the same licence (GPL v3, see [LICENSE](LICENSE)). It is not affiliated with or endorsed
-> by Hookshot's authors. If you want the real thing, the releases and the support, go to
-> [NotRexed/Hookshot](https://github.com/NotRexed/Hookshot).
+> top of Hookshot's nightly build of 12 November 2026 (commit 3723fd0b, 306 commits past v2.1.0), under the same licence
+> (GPL v3, see [LICENSE](LICENSE)). It is not affiliated with or endorsed by Hookshot's authors. If you want the real
+> thing, the releases and the support, go to [NotRexed/Hookshot](https://github.com/NotRexed/Hookshot).
 >
-> **What differs from Hookshot v2.1.0**
+> **What differs from that Hookshot**
 >
-> - A draw waits a little for its program or pipeline before it is left out of a frame.
-> - The pipeline prediction runs until it has been run to its end (it goes on at the next start, and runs again on
->   another graphics card).
+> - A draw waits a little for its pipeline before it is left out of a frame (`RX_VK_PIPE_WAIT_MS`, 25 by default, 0 for
+>   Hookshot's behaviour). Hookshot's own wait for a program's translation is kept as it is.
 > - An optional profile-guided build of the Vulkan back end (`RX_VK_PGO`, a local build's option).
 > - The look: the start-up screen says LONGSHOT, "based on Hookshot"; the menu's banner says SETTINGS; the window's
 >   title can be set (`HOS_WINDOW_TITLE` in `hookshot_env.txt`); the Discord status is off unless you turn it on.
 >
-> **A note for 8 GB graphics cards.** Measured on an RTX 3070 Ti laptop: v2.1.0 makes and keeps about 10,800 graphics
-> pipelines at every start, which costs about 500 MB of video memory and brings the card to its limit in Kokiri Forest
-> (see Hookshot's issue 2156). After one start that prepared the shaders, `RX_VK_PRECOMPILE=0` in `hookshot_env.txt`
-> gives that memory back at the same speed: the pipelines are then taken from the cache when first drawn.
+> Two changes this fork carried on v2.1.0 are gone: Hookshot now does them itself (the pipeline prediction that goes on
+> at the next start, and the wait for a program).
+>
+> **A note for 8 GB graphics cards.** Measured on an RTX 3070 Ti laptop in Kokiri Forest: `RX_VK_PRECOMPILE=0` in
+> `hookshot_env.txt`, after one start that prepared the shaders, plays at the same speed with less video memory (5.0
+> instead of 5.3 GB standing still, a peak of 5.7 instead of 6.4 GB on a walk). On v2.1.0 the card was at its limit
+> without that line (Hookshot's issue 2156); on this version it is not, and the line is only extra room.
+>
+> **A note for 6 GB graphics cards.** A card of 6 GB gets 768 MB for the copies of the game's memory it keeps in video
+> memory, and Kokiri Forest asks for about 1,100 MB: which blocks are left in system memory depends on the order they
+> are first used in, and when a busy one is, the card reads it over PCIe every frame. Measured on the same 8 GB laptop
+> with the driver's allowance set to a 6 GB card's (`RX_VK_TEST_ALLOWED_MB=5226`): 34 to 37 fps with the 768 MB, 43 to
+> 50 fps and a GPU frame of 9 ms with `RX_VK_MIRROR_MB=1024`; 1,200 MB reached the allowance on a walk. Not yet
+> confirmed on a real 6 GB card, which holds more of other things than this test does.
 >
 > **Thanks.** To NotRexed and everyone who contributes to Hookshot, first. And to
 > [Fritchii](https://github.com/Frizti/Fritchii) and the projects it builds on: it served as the reference for how the
