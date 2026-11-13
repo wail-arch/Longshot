@@ -1,6 +1,6 @@
 > **Longshot** is a personal fork of **[Hookshot](https://github.com/NotRexed/Hookshot)**, by NotRexed and Hookshot's
 > contributors. The project, its design and nearly all of its code are theirs: this fork only carries a few changes on
-> top of Hookshot's nightly build of 12 November 2026 (commit 3723fd0b, 306 commits past v2.1.0), under the same licence
+> top of Hookshot's `main` of 13 November 2026 (commit 8b762704, 430 commits past v2.1.0), under the same licence
 > (GPL v3, see [LICENSE](LICENSE)). It is not affiliated with or endorsed by Hookshot's authors. If you want the real
 > thing, the releases and the support, go to [NotRexed/Hookshot](https://github.com/NotRexed/Hookshot).
 >
@@ -19,6 +19,14 @@
 > `hookshot_env.txt`, after one start that prepared the shaders, plays at the same speed with less video memory (5.0
 > instead of 5.3 GB standing still, a peak of 5.7 instead of 6.4 GB on a walk). On v2.1.0 the card was at its limit
 > without that line (Hookshot's issue 2156); on this version it is not, and the line is only extra room.
+>
+> (Both notes on graphics cards were measured on this fork's previous base, Hookshot's nightly of 12 November 2026.)
+>
+> **A note for views with many draws.** Hookshot's own opt-in recorder thread (`RX_VK_RECORDER=thread`, with
+> `RX_VK_RECORDER_SPIN_US=20`, in `hookshot_env.txt`) is worth trying where the processor is the limit. Measured on the
+> same laptop (Ryzen 9 6900HS) standing in the centre of Kokiri village, about 3,150 draws a frame: 37.3 and 37.6 fps
+> without it, 39.5, 39.6 and 38.3 with it on this base; 39.4 against 43.1 on the previous base in a quieter session. A
+> scripted walk of 9,224 frames with it showed no one-frame flash and no crash. Not measured on other processors.
 >
 > **A note for 6 GB graphics cards.** A card of 6 GB gets 768 MB for the copies of the game's memory it keeps in video
 > memory, and Kokiri Forest asks for about 1,100 MB: which blocks are left in system memory depends on the order they
