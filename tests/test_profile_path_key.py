@@ -28,7 +28,8 @@ class ProfilePathTests(unittest.TestCase):
         src = (ROOT / "nx2" / "build.py").read_text(encoding="utf-8")
         uses = [line for line in src.splitlines() if '"-fprofile-instr-use=" +' in line]
         self.assertTrue(uses)
-        self.assertTrue(all("-DHOOKSHOT_PROFILE_SHA1=" in line for line in uses), uses)
+        # (the fork's profile of the Vulkan back end, RX_VK_PGO, names its contents the same way under its own define)
+        self.assertTrue(all("-DHOOKSHOT_PROFILE_SHA1=" in line or "-DHOOKSHOT_VK_PROFILE_SHA1=" in line for line in uses), uses)
 
 
 if __name__ == "__main__":
