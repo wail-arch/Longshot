@@ -2,7 +2,8 @@
 > contributors. The project, its design and nearly all of its code are theirs: this fork only carries a few changes on
 > top of Hookshot's `main` of 13 November 2026 (commit 8b762704, 430 commits past v2.1.0), under the same licence
 > (GPL v3, see [LICENSE](LICENSE)). It is not affiliated with or endorsed by Hookshot's authors. If you want the real
-> thing, the releases and the support, go to [NotRexed/Hookshot](https://github.com/NotRexed/Hookshot).
+> thing, the releases and the support, go to [NotRexed/Hookshot](https://github.com/NotRexed/Hookshot). (On 13 November
+> 2026 that address stopped answering; this branch holds Hookshot's history up to the commit named above.)
 >
 > **What differs from that Hookshot**
 >
